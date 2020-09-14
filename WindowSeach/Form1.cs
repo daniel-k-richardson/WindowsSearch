@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-// 1. Import the InteropServices type
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace WindowSeach
 {
@@ -17,8 +9,6 @@ namespace WindowSeach
     {
         [DllImport("user32.dll")]
         public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vlc);
-
-        public bool IsVisable = true;
 
         public Form1()
         {
@@ -28,12 +18,13 @@ namespace WindowSeach
 
             InitializeComponent();
 
-            int UniqueHotkeyId = 1;
-            int HotKeyCode = (int)Keys.Space;
-            Boolean F9Registered = RegisterHotKey(this.Handle, UniqueHotkeyId, 0x0002, HotKeyCode);
+            var UniqueHotkeyId = 1;
+            var HotKeyCode = (int)Keys.Space;
+            var ctrlModifier = 0x0002;
 
-            // 4. Verify if the hotkey was succesfully registered, if not, show message in the console
-            if (F9Registered)
+            var CtrlSpacebar = RegisterHotKey(this.Handle, UniqueHotkeyId, ctrlModifier, HotKeyCode);
+
+            if (CtrlSpacebar)
             {
                 Console.WriteLine("Global Hotkey F9 was succesfully registered");
             }
@@ -43,15 +34,17 @@ namespace WindowSeach
             }
         }
 
-        protected override void WndProc(ref Message m)
+        private bool _isVisable = true;
+
+        protected override void WndProc(ref Message message)
         {
-            if (m.Msg == 0x0312)
+            if (message.Msg == 0x0312)
             {
-                int id = m.WParam.ToInt32();
+                int id = message.WParam.ToInt32();
 
                 if (id == 1)
                 {
-                    if (IsVisable)
+                    if (_isVisable)
                     {
                         this.Hide();
                     }
@@ -60,25 +53,15 @@ namespace WindowSeach
                         this.Show();
                     }
 
-                    IsVisable = !IsVisable;
+                    _isVisable = !_isVisable;
                 }
             }
-            base.WndProc(ref m);
+            base.WndProc(ref message);
         }
 
         private bool dragging = false;
         private Point dragCursorPoint;
         private Point dragFormPoint;
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
 
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -101,9 +84,8 @@ namespace WindowSeach
             dragging = false;
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        private void textBox1_TextChanged(object sender, EventArgs e) { }
+        private void Form1_Load(object sender, EventArgs e) { }
+        private void panel1_Paint(object sender, PaintEventArgs e) { }
     }
 }
