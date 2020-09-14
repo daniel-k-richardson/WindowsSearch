@@ -8,10 +8,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+// 1. Import the InteropServices type
+using System.Runtime.InteropServices;
+
 namespace WindowSeach
 {
     public partial class Form1 : Form
     {
+        [DllImport("user32.dll")]
+        public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vlc);
+
+        public bool IsVisable = true;
+
         public Form1()
         {
             this.FormBorderStyle = FormBorderStyle.None;
@@ -19,13 +27,48 @@ namespace WindowSeach
             this.TransparencyKey = Color.DimGray;
 
             InitializeComponent();
+
+            int UniqueHotkeyId = 1;
+            int HotKeyCode = (int)Keys.Space;
+            Boolean F9Registered = RegisterHotKey(this.Handle, UniqueHotkeyId, 0x0002, HotKeyCode);
+
+            // 4. Verify if the hotkey was succesfully registered, if not, show message in the console
+            if (F9Registered)
+            {
+                Console.WriteLine("Global Hotkey F9 was succesfully registered");
+            }
+            else
+            {
+                Console.WriteLine("Global Hotkey F9 couldn't be registered !");
+            }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == 0x0312)
+            {
+                int id = m.WParam.ToInt32();
+
+                if (id == 1)
+                {
+                    if (IsVisable)
+                    {
+                        this.Hide();
+                    }
+                    else
+                    {
+                        this.Show();
+                    }
+
+                    IsVisable = !IsVisable;
+                }
+            }
+            base.WndProc(ref m);
         }
 
         private bool dragging = false;
         private Point dragCursorPoint;
         private Point dragFormPoint;
-
-
 
         private void Form1_Load(object sender, EventArgs e)
         {
